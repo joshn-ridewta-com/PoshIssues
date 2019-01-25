@@ -60,9 +60,6 @@ function New-IssueFix {
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.Int64] $SequenceNumber = 1
 	)
-        Begin {
-                #Put begin here
-        }
 	Process {
                 $_return = New-Object -TypeName PSObject
                 $_return.PSObject.TypeNames.Insert(0,'PoshIssues.Fix')
@@ -72,6 +69,8 @@ function New-IssueFix {
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_status" -Value ([Int64] $Status)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $NotificationCount)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $SequenceNumber)
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] (Get-Date))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] (Get-Date))
 
                 #Calculate iD
                 $StringBuilder = New-Object System.Text.StringBuilder 
@@ -93,9 +92,6 @@ function New-IssueFix {
 
                 Write-Output $_return
 	}
-	End {
-                #Put end here
-	}
 }
 
 function Write-IssueFix {
@@ -108,7 +104,7 @@ function Write-IssueFix {
                 [Parameter(Mandatory=$true,Position=1,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true, ParameterSetName="Path")]
                 [String] $Path,
                 [Parameter(Mandatory=$false,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
-                [Switch] $Force
+                [Switch] $NoClobber
 	)
 	Process {
                 #Create an object to save as JSON
@@ -121,6 +117,8 @@ function Write-IssueFix {
                         "fixResults" = $Fix.fixResults;
                         "statusInt" = $Fix._status;
                         "notificationCount" = $Fix.notificationCount;
+                        "creationDateTime" = $Fix.creationDateTime;
+                        "statusDateTime" = $Fix.statusDateTime
                 }
                 $_path = ""
                 If ($DatabasePath) {
@@ -141,21 +139,13 @@ function Write-IssueFix {
                         Add-Member -InputObject $Fix -MemberType NoteProperty -Name "path" -Value $Path -Force
                         $_path = $Path
                 }
-                if ($Force) { $_Force = $true} else {$_Force = $false}
-                
-                <#
-                TODO: Think about when to overwrite and when to skip.  Goal is to prevent duplicate Fix objects 
-                from being created/saved when a Check generates a duplicate.  Is this the correct place to catch this?
-                Does catching it here require excesive use of the Force command to catch legitimate changes (status. etc)?
-                Should I only check if no DatabasePath/Path is not set on the object already?
-                #>
 
-                #If the file exists AND Force is False/not set do not write the file
-                if ((Test-Path $_path) -and ($_Force -eq $false)) {
-                        Write-Verbose "JSON file already exists at '$_path'.  Will not overwrite unless Force is set."
+                #If the file exists AND NoClobber is true not write the file
+                if ((Test-Path $_path) -and ($NoClobber)) {
+                        Write-Verbose "JSON file already exists at '$_path' and NoClobber is set."
                 } else {
                         $_json = ConvertTo-Json -InputObject $_fix
-                        Out-File -FilePath $_path -Force:$_Force -InputObject $_json
+                        Out-File -FilePath $_path -Force:$true -InputObject $_json
                         Write-Verbose "JSON saved to '$_path'."
                 }
 
@@ -195,7 +185,7 @@ function Remove-IssueFix {
                         }
                 }
 
-                Write-Output $null      #TODO: Should this return the Fix or NULL?
+                Write-Output $Fix
 	}
 }
 function Archive-IssueFix {
@@ -246,7 +236,7 @@ function Archive-IssueFix {
                         }
                 }
 
-                Write-Output $null      #TODO: Should this return the Fix or NULL?
+                Write-Output $Fix
 	}
 }
 
@@ -292,12 +282,12 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $_fix.sequenceNumber)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "iD" -Value $_fix.id
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
 
                         if ("fixResults" -in $_fix.PSobject.Properties.Name) {
                                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixResults" -Value $_fix.fixResults -Force
                         }
-
-                        #TODO: Add an archived flag?
 
                         Add-Member -InputObject $_return -MemberType ScriptProperty -Name "status" -Value `
                         { #Get
@@ -318,7 +308,7 @@ function Set-IssueFix {
 	[CmdletBinding(SupportsShouldProcess=$true)]
 	Param(
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
-                [PSObject]$Fix,
+                [PSObject] $Fix,
                 [Parameter(Mandatory=$false,Position=1,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [String] $FixDescription,
                 [Parameter(Mandatory=$false,Position=2,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
@@ -337,8 +327,12 @@ function Set-IssueFix {
                                 $Fix.fixDescription = $FixDescription
                         }
                         if ($Status) {
-                                #TODO: Validate input?
-                                $Fix._status = $Status
+                                if (($Status -ge 0) -and ($Status -le 4)) {
+                                        $Fix._status = $Status
+                                        $Fix.statusDateTime = Get-Date
+                                } else {
+                                        Write-Warning "Invalid status value"
+                                }
                         }
                         If ($NotificationCount) {
                                 $Fix.notificationCount = $NotificationCount
@@ -354,32 +348,93 @@ function Set-IssueFix {
 	}
 }
 
-# TODO: is this confusing, does this change it to Ready or Complete, will this be confused with Invoke-IssueFix?
-function Complete-IssueFix {
+function Approve-IssueFix {
 	[CmdletBinding(SupportsShouldProcess=$true)]
 	Param(
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
-		[PSObject]$Fix
+		[PSObject] $Fix
 	)
 	Process {
                 if ($PSCmdlet.ShouldProcess("Change $($Fix.fixDescription) from $(Fix.status) to Complete?")) {
                         $Fix._status = 0
+                        $Fix.statusDateTime = Get-Date
                 }
                 Write-Output $Fix
 	}
 }
 
-function Cancel-IssueFix {
+function Deny-IssueFix {
 	[CmdletBinding(SupportsShouldProcess=$true)]
 	Param(
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
-		[PSObject]$Fix
+		[PSObject] $Fix
 	)
 	Process {
                 if ($PSCmdlet.ShouldProcess("Change $($Fix.fixDescription) from $($Fix.status) to Complete?")) {
                         $Fix._status = 4
+                        $Fix.statusDateTime = Get-Date
                 }
                 Write-Output $Fix
 	}
 }
 
+function Invoke-IssueFix {
+	[CmdletBinding(SupportsShouldProcess=$true)]
+	Param(
+		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
+                [PSObject] $Fix,
+                [Parameter()]
+                [Switch] $Force,
+                [Parameter()]
+                [Switch] $NoNewScope
+	)
+	Process {
+                if (($Fix.status -eq 0) -or $Force) {
+                        if ($PSCmdlet.ShouldProcess("Invoke $($Fix.fixDescription) from $($Fix.checkName) by running $($Fix.fixCommand)?")) {
+                                try {
+                                        $Fix.fixResults = [String] (Invoke-Command -ScriptBlock $fix.fixCommand -NoNewScope:$NoNewScope)
+                                        $Fix.status = 2 #Complete
+                                        Write-Verbose "$($Fix.checkName): $($Fix.fixDescription) complete with following results: $($Fix.fixResults)"
+                                } catch {
+                                        #Error
+                                        $Fix.fixResults = [String] $Error[$Error.Count - 1]
+                                        $Fix.status = 3 #Error
+                                        Write-Verbose "$($Fix.checkName): $($Fix.fixDescription) errored with following error: $($Fix.fixResults)"
+                                } finally {
+                                        $Fix.statusDateTime = Get-Date
+                                }
+                        }
+                }
+                Write-Output $Fix
+	}
+}
+
+#TODO: Needs testing!!!!!!!
+function Limit-IssueFix {
+	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
+		[PSObject] $Fix
+        )
+        Begin {
+                $_fixes = [System.Collections.ArrayList]@()
+        }
+	Process {
+                $_fixes.Add($Fix)
+        }
+        End {
+                #Sort the fixes by iD and creationDateTime
+                $_fixes = $_fixes | Sort-Object -Property @("iD", "creationDateTime")
+                #Iterate resutls of sort writing out the first instance of each iD
+                $_iD = ""
+                forEach ($_fix in $_fixes) {
+                        if ($_fix.iD -ne $_iD) {
+                                $_iD = $_fix.iD
+                                Write-Output $_fix
+                        } else {
+                                Write-Verbose "Removed from pipelin fix with iD: $($_fix.iD) and creation date/time of $($_fix.creationDateTime)"
+                        }
+                }
+
+        }
+}
