@@ -423,13 +423,8 @@ function Limit-IssueFix {
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
 		[PSObject] $Fix
         )
-        Begin {
-                $_fixes = [System.Collections.ArrayList]@()
-        }
-	Process {
-                $_fixes.Add($Fix)
-        }
         End {
+                $_fixes = $input
                 #Sort the fixes by iD and creationDateTime
                 $_fixes = $_fixes | Sort-Object -Property @("iD", "creationDateTime") -Descending
                 #Iterate resutls of sort writing out the first instance of each iD
