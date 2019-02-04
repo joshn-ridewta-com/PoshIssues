@@ -44,11 +44,13 @@ IssueFix The fix object(s) created by the cmdlet
 
 #>
 function New-IssueFix {
-    [CmdletBinding(SupportsShouldProcess=$false,DefaultParameterSetName="")]
+    [CmdletBinding(SupportsShouldProcess=$false,DefaultParameterSetName="Block")]
     [OutputType("PoshIssues.Fix")]
 	Param(
-                [Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
+                [Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false, ParameterSetName="Block")]
                 [ScriptBlock] $FixCommand,
+                [Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false, ParameterSetName="String")]
+                [String] $FixCommandString,
                 [Parameter(Mandatory=$false,Position=1,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [String] $FixDescription = "",
                 [Parameter(Mandatory=$false,Position=2,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
@@ -56,13 +58,18 @@ function New-IssueFix {
                 [Parameter(Mandatory=$false,Position=3,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [IssueFixStatus] $Status = 0,
                 [Parameter(Mandatory=$false,Position=4,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
-                [System.Int64] $NotificationCount = 1,
+                [System.Int64] $NotificationCount = 10000,
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.Int64] $SequenceNumber = 1
 	)
 	Process {
                 $_return = New-Object -TypeName PSObject
                 $_return.PSObject.TypeNames.Insert(0,'PoshIssues.Fix')
+
+                If ($FixCommandString) {
+                        $FixCommand = [scriptblock]::Create($FixCommandString)
+                }
+
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixCommand" -Value $FixCommand
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixDescription" -Value $FixDescription
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "checkName" -Value $CheckName
@@ -178,7 +185,7 @@ function Remove-IssueFix {
                                 if ($PSCmdlet.ShouldProcess("Remove $($Fix.fixDescription) from file/database?")) {
                                         #Delete the JSON file
                                         Write-Verbose "Removed $_path"
-                                        Remote-Item $_path
+                                        Remove-Item $_path
                                 }
                         } else {
                                 Write-Warning "Saved Fix JSON file not found at $_path"
@@ -355,7 +362,7 @@ function Approve-IssueFix {
 		[PSObject] $Fix
 	)
 	Process {
-                if ($PSCmdlet.ShouldProcess("Change $($Fix.fixDescription) from $(Fix.status) to Complete?")) {
+                if ($PSCmdlet.ShouldProcess("Change $($Fix.fixDescription) from $($Fix.status) to Complete?")) {
                         $Fix._status = 0
                         $Fix.statusDateTime = Get-Date
                 }
@@ -379,7 +386,7 @@ function Deny-IssueFix {
 }
 
 function Invoke-IssueFix {
-	[CmdletBinding(SupportsShouldProcess=$true)]
+	[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 	Param(
 		[Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$false)]
                 [PSObject] $Fix,
@@ -391,13 +398,14 @@ function Invoke-IssueFix {
 	Process {
                 if (($Fix.status -eq 0) -or $Force) {
                         if ($PSCmdlet.ShouldProcess("Invoke $($Fix.fixDescription) from $($Fix.checkName) by running $($Fix.fixCommand)?")) {
+                                Add-Member -InputObject $Fix -MemberType NoteProperty -Name "fixResults" -Value "" -Force
                                 try {
                                         $Fix.fixResults = [String] (Invoke-Command -ScriptBlock $fix.fixCommand -NoNewScope:$NoNewScope)
                                         $Fix.status = 2 #Complete
                                         Write-Verbose "$($Fix.checkName): $($Fix.fixDescription) complete with following results: $($Fix.fixResults)"
                                 } catch {
                                         #Error
-                                        $Fix.fixResults = [String] $Error[$Error.Count - 1]
+                                        $Fix.fixResults = [String] $_.Exception.Message
                                         $Fix.status = 3 #Error
                                         Write-Verbose "$($Fix.checkName): $($Fix.fixDescription) errored with following error: $($Fix.fixResults)"
                                 } finally {
@@ -409,7 +417,6 @@ function Invoke-IssueFix {
 	}
 }
 
-#TODO: Needs testing!!!!!!!
 function Limit-IssueFix {
 	[CmdletBinding()]
 	Param(
@@ -424,7 +431,7 @@ function Limit-IssueFix {
         }
         End {
                 #Sort the fixes by iD and creationDateTime
-                $_fixes = $_fixes | Sort-Object -Property @("iD", "creationDateTime")
+                $_fixes = $_fixes | Sort-Object -Property @("iD", "creationDateTime") -Descending
                 #Iterate resutls of sort writing out the first instance of each iD
                 $_iD = ""
                 forEach ($_fix in $_fixes) {
