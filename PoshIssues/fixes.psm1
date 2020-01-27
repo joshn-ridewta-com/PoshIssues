@@ -65,7 +65,9 @@ function New-IssueFix {
                 [Parameter(Mandatory=$false,Position=4,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.Int64] $NotificationCount = 10000,
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
-                [System.Int64] $SequenceNumber = 1
+                [System.Int64] $SequenceNumber = 1,
+                [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
+                [Switch] $useCommandAsDescription
 	)
 	Process {
                 $_return = New-Object -TypeName PSObject
@@ -73,6 +75,10 @@ function New-IssueFix {
 
                 If ($FixCommandString) {
                         $FixCommand = [scriptblock]::Create($FixCommandString)
+                }
+
+                if ($useCommandAsDescription) {
+                        $FixDescription = $FixCommand.ToString()
                 }
 
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixCommand" -Value $FixCommand
