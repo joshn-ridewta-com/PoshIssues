@@ -40,6 +40,9 @@ Set the number of times notices is sent about this fix.  Usefull for scheduled n
 .PARAMETER SequenceNumber
 Fix sort order.  Default is 1.
 
+.PARAMETER useCommandAsDescription
+Switch to ignore the passed description, if any, and instead use the command as a string value for description.
+
 .INPUTS
 ScriptBlock representing the script that will be invoked by the fix
 String representing the script that will be invoked by the fix
