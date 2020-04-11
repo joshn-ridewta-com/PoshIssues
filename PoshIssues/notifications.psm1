@@ -8,6 +8,12 @@ enum IssueFixStatus {
     Hold
 }
 
+enum IssueFixPriority {
+    Low
+    Medium
+    High
+}
+
 <#
 .SYNOPSIS
 Sends a mail message with error, pending and completed fixes listed in simple HTML tables.
