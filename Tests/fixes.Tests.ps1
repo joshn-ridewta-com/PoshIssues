@@ -1,12 +1,11 @@
-<<<<<<< HEAD:Tests/fixes.Tests.ps1
 . .\localTestValues.ps1
 
 #Import module
 Import-Module ..\PoshIssues -Force
 
 describe "New-IssueFix" {
-    $result = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $result2 = New-IssueFix -FixCommandString "echo 'Hello World'" -FixDescription "First fix" -CheckName "Greetings"
+    $result = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $result2 = New-IssueFix -FixCommandString "Write-Output 'Hello World'" -FixDescription "First fix" -CheckName "Greetings"
     
     it "should return a fix with checkName Greetings" {
         $result.checkName | should be "Greetings"
@@ -22,19 +21,19 @@ describe "New-IssueFix" {
 }
 
 describe "Write-IssueFix" {
-    $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
 
     it "should create a JSON file in the database folder" {
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -DatabasePath $DatabasePath
+        $fix | Write-IssueFix -DatabasePath $DatabasePath | Out-Null
         "$($DatabasePath)\Fixes\$($fix.id).json" | should exist
     }
 
     it "should create a JSON file at a specific location" {
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -Path $filePath
+        $fix | Write-IssueFix -Path $filePath | Out-Null
         $filePath | should exist
     }
 
@@ -57,7 +56,7 @@ describe "Write-IssueFix" {
 describe "Remove-IssueFix" {
 
     it "should remove a JSON file in the database folder" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
@@ -67,7 +66,7 @@ describe "Remove-IssueFix" {
     }
 
     it "should remove a JSON file at a specific location" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
         $result = $fix | Write-IssueFix -Path $filePath
@@ -79,7 +78,7 @@ describe "Remove-IssueFix" {
 
 describe "Archive-IssueFix" {
     it "should move the fix to the database archive folder" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
@@ -91,7 +90,7 @@ describe "Archive-IssueFix" {
     }
 
     it "should move the fix to the ArchivePath specified" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
         $result = $fix | Write-IssueFix -Path $filePath
@@ -106,8 +105,8 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath
         ($fix | Measure-Object).Count | should be 2
@@ -117,8 +116,8 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath -isPending
         ($fix | Measure-Object).Count | should be 1
@@ -128,18 +127,18 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Complete | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Complete | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath -isComplete
         ($fix | Measure-Object).Count | should be 1
     }
 
     it "should read IssueFix(s) from the path" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -Path $filePath
+        $fix | Write-IssueFix -Path $filePath | Out-Null
 
         $fix = Read-IssueFix -Path $filePath
         ($fix | Measure-Object).Count | should be 1
@@ -148,52 +147,52 @@ describe "Read-IssueFix" {
 
 describe "should change IssueFix object" {
     it "should change the description of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -FixDescription "Test").fixDescription | should be "Test"
     }
 
     it "should change the Status of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending).status | should be Pending
     }
 
     it "should change the Status of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
         ($fix | Set-IssueFix -Status Hold).status | should be Hold
     }
 
     it "should change the NofiticationCount of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -NotificationCount 100).notificationCount | should be 100
     }
 
     it "should change the SequenceNumber of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -SequenceNumber 66).sequenceNumber | should be 66
     }
 
     it "should change the NofiticationCount of the IssueFix by 1" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -NotificationCount 101
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -NotificationCount 101
         ($fix | Set-IssueFix -DecrementNotificationCount).notificationCount | should be 100
     }
 }
 
 describe "Approve-IssueFix" {
     it "should change the Status of the IssueFix from Pending to Ready" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending | Approve-IssueFix).status | should be Ready
     }
 }
 
 describe "Deny-IssueFix" {
     it "should change the Status of the IssueFix from Pending to Canceled" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending | Deny-IssueFix).status | should be Canceled
     }
 }
 
 describe "Invoke-IssueFix" {
-    $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
     it "should invoke the ScriptBlock in the IssueFix, add the results to the IssueFix and update Status and statusDateTime" {
         $fix = $fix | Invoke-IssueFix
         $fix.fixResults | should be "Hello World"
@@ -211,12 +210,12 @@ describe "Invoke-IssueFix" {
     }
 
     it "should invoke again as Force is set" {
-        Sleep -Seconds 5
+        Start-Sleep -Seconds 5
         $fix = $fix | Invoke-IssueFix -Force
         $fix.statusDateTime | should not be  $lastD
     }
 
-    $fix = New-IssueFix -FixCommand {echo (5 / 0)} -FixDescription "First error" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output (5 / 0)} -FixDescription "First error" -CheckName "Greetings"
 
     it "should return an error string" {
         $fix = $fix | Invoke-IssueFix
@@ -227,7 +226,7 @@ describe "Invoke-IssueFix" {
         $fix.status | should be "Error"
     }
 
-    function Test-Echo {
+    function Test-Write-Output {
         [CmdletBinding(SupportsShouldProcess=$false,DefaultParameterSetName="example")]
         Param(
             [Parameter(Mandatory=$true)]
@@ -235,22 +234,22 @@ describe "Invoke-IssueFix" {
         )
         Process {
             #Put process here
-            echo "$Param1"
+            Write-Output "$Param1"
         }
     }
-    $fix = New-IssueFix -FixCommand {Test-Echo} -FixDescription "DefaultParameterValues" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Test-Write-Output} -FixDescription "DefaultParameterValues" -CheckName "Greetings"
 
     it "should use passed DefaultParameterValues" {
-        $fix = $fix | Invoke-IssueFix -DefaultParameterValues @{"Test-Echo:Param1" = "Hi"}
+        $fix = $fix | Invoke-IssueFix -DefaultParameterValues @{"Test-Write-Output:Param1" = "Hi"}
         $fix.fixResults | Should be "Hi"
     }
 }
 
 describe "Limit-IssueFix" {
     $fixes = @()
-    $fixes += New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $fixes += New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $fixes += New-IssueFix -FixCommand {echo "Hi World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hi World"} -FixDescription "First fix" -CheckName "Greetings"
 
     it "should only return the unique IssueFix objects" {
         $results = $fixes | Limit-IssueFix
@@ -264,8 +263,8 @@ describe "Limit-IssueFix" {
 Import-Module .\PoshIssues -Force
 
 describe "New-IssueFix" {
-    $result = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $result2 = New-IssueFix -FixCommandString "echo 'Hello World'" -FixDescription "First fix" -CheckName "Greetings"
+    $result = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $result2 = New-IssueFix -FixCommandString "Write-Output 'Hello World'" -FixDescription "First fix" -CheckName "Greetings"
     
     it "should return a fix with checkName Greetings" {
         $result.checkName | should be "Greetings"
@@ -281,19 +280,19 @@ describe "New-IssueFix" {
 }
 
 describe "Write-IssueFix" {
-    $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
 
     it "should create a JSON file in the database folder" {
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -DatabasePath $DatabasePath
+        $fix | Write-IssueFix -DatabasePath $DatabasePath | Out-Null
         "$($DatabasePath)\Fixes\$($fix.id).json" | should exist
     }
 
     it "should create a JSON file at a specific location" {
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -Path $filePath
+        $fix | Write-IssueFix -Path $filePath | Out-Null
         $filePath | should exist
     }
 
@@ -316,7 +315,7 @@ describe "Write-IssueFix" {
 describe "Remove-IssueFix" {
 
     it "should remove a JSON file in the database folder" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
@@ -326,7 +325,7 @@ describe "Remove-IssueFix" {
     }
 
     it "should remove a JSON file at a specific location" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
         $result = $fix | Write-IssueFix -Path $filePath
@@ -338,7 +337,7 @@ describe "Remove-IssueFix" {
 
 describe "Archive-IssueFix" {
     it "should move the fix to the database archive folder" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item "$($DatabasePath)\Fixes\$($fix.id).json" -ErrorAction SilentlyContinue
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
@@ -350,7 +349,7 @@ describe "Archive-IssueFix" {
     }
 
     it "should move the fix to the ArchivePath specified" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
         $result = $fix | Write-IssueFix -Path $filePath
@@ -365,8 +364,8 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath
         ($fix | Measure-Object).Count | should be 2
@@ -376,8 +375,8 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath -isPending
         ($fix | Measure-Object).Count | should be 1
@@ -387,18 +386,18 @@ describe "Read-IssueFix" {
 
         Get-ChildItem "$($DatabasePath)\Fixes" -File | Remove-Item
 
-        New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
-        New-IssueFix -FixCommand {echo "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Complete | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Ready | Write-IssueFix -DatabasePath $DatabasePath
+        New-IssueFix -FixCommand {Write-Output "Hello Josh"} -FixDescription "First fix" -CheckName "Greetings" -Status Complete | Write-IssueFix -DatabasePath $DatabasePath
 
         $fix = Read-IssueFix -DatabasePath $DatabasePath -isComplete
         ($fix | Measure-Object).Count | should be 1
     }
 
     it "should read IssueFix(s) from the path" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         #Delete file if it exists
         remove-item $filePath -ErrorAction SilentlyContinue
-        $result = $fix | Write-IssueFix -Path $filePath
+        $fix | Write-IssueFix -Path $filePath | Out-Null
 
         $fix = Read-IssueFix -Path $filePath
         ($fix | Measure-Object).Count | should be 1
@@ -407,52 +406,52 @@ describe "Read-IssueFix" {
 
 describe "should change IssueFix object" {
     it "should change the description of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -FixDescription "Test").fixDescription | should be "Test"
     }
 
     it "should change the Status of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending).status | should be Pending
     }
 
     it "should change the Status of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
         ($fix | Set-IssueFix -Status Hold).status | should be Hold
     }
 
     it "should change the NofiticationCount of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -NotificationCount 100).notificationCount | should be 100
     }
 
     it "should change the SequenceNumber of the IssueFix" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -SequenceNumber 66).sequenceNumber | should be 66
     }
 
     it "should change the NofiticationCount of the IssueFix by 1" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -NotificationCount 101
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -NotificationCount 101
         ($fix | Set-IssueFix -DecrementNotificationCount).notificationCount | should be 100
     }
 }
 
 describe "Approve-IssueFix" {
     it "should change the Status of the IssueFix from Pending to Ready" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending | Approve-IssueFix).status | should be Ready
     }
 }
 
 describe "Deny-IssueFix" {
     it "should change the Status of the IssueFix from Pending to Canceled" {
-        $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -Status Pending | Deny-IssueFix).status | should be Canceled
     }
 }
 
 describe "Invoke-IssueFix" {
-    $fix = New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
     it "should invoke the ScriptBlock in the IssueFix, add the results to the IssueFix and update Status and statusDateTime" {
         $fix = $fix | Invoke-IssueFix
         $fix.fixResults | should be "Hello World"
@@ -470,12 +469,12 @@ describe "Invoke-IssueFix" {
     }
 
     it "should invoke again as Force is set" {
-        Sleep -Seconds 5
+        Start-Sleep -Seconds 5
         $fix = $fix | Invoke-IssueFix -Force
         $fix.statusDateTime | should not be  $lastD
     }
 
-    $fix = New-IssueFix -FixCommand {echo (5 / 0)} -FixDescription "First error" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Write-Output (5 / 0)} -FixDescription "First error" -CheckName "Greetings"
 
     it "should return an error string" {
         $fix = $fix | Invoke-IssueFix
@@ -486,7 +485,7 @@ describe "Invoke-IssueFix" {
         $fix.status | should be "Error"
     }
 
-    function Test-Echo {
+    function Test-Write-Output {
         [CmdletBinding()]
         Param(
             [Parameter(Mandatory=$true)]
@@ -494,35 +493,34 @@ describe "Invoke-IssueFix" {
         )
         Process {
             #Put process here
-            echo "$Param1"
+            Write-Output "$Param1"
         }
     }
 
-    $fix = New-IssueFix -FixCommand {Test-Echo} -FixDescription "DefaultParameterValues" -CheckName "Greetings"
+    $fix = New-IssueFix -FixCommand {Test-Write-Output} -FixDescription "DefaultParameterValues" -CheckName "Greetings"
     it "should use passed DefaultParameterValues" {
-        $fix = $fix | Invoke-IssueFix -DefaultParameterValues @{"Test-Echo:Param1" = "Hi"}
+        $fix = $fix | Invoke-IssueFix -DefaultParameterValues @{"Test-Write-Output:Param1" = "Hi"}
         $fix.fixResults | Should be "Hi"
     }
 
     [PSObject[]] $fixes = $null
-    $fixes += New-IssueFix -FixCommand {Test-Echo} -FixDescription "DefaultParameterValues 1" -CheckName "Greetings"
-    $fixes += New-IssueFix -FixCommand {Test-Echo} -FixDescription "DefaultParameterValues 2" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Test-Write-Output} -FixDescription "DefaultParameterValues 1" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Test-Write-Output} -FixDescription "DefaultParameterValues 2" -CheckName "Greetings"
 
     it "should use passed DefaultParameterValues with multiple fixes" {
-        $fixes = $fixes | Invoke-IssueFix -DefaultParameterValues @{"Test-Echo:Param1" = "Hi"}
+        $fixes = $fixes | Invoke-IssueFix -DefaultParameterValues @{"Test-Write-Output:Param1" = "Hi"}
         $fixes.fixResults | Should be @("Hi", "Hi")
     }
 }
 
 describe "Limit-IssueFix" {
     $fixes = @()
-    $fixes += New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $fixes += New-IssueFix -FixCommand {echo "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-    $fixes += New-IssueFix -FixCommand {echo "Hi World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    $fixes += New-IssueFix -FixCommand {Write-Output "Hi World"} -FixDescription "First fix" -CheckName "Greetings"
 
     it "should only return the unique IssueFix objects" {
         $results = $fixes | Limit-IssueFix
         ($results | Measure-Object).Count | Should be 2
     }
 }
->>>>>>> remotes/origin/master:fixes.Tests.ps1
