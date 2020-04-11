@@ -5,7 +5,7 @@ PowerShell module to check, track and fix issues.
 A fix is a ScriptBlock to make the change recomended by the fix.  It supports a number of features to allow for reviewing and documenting the fixes.
 
 The IssueFix object contains:
-+ iD (GUID) calculated feom a hash of fixCommand
++ iD (GUID) calculated from a hash of fixCommand
 + sequenceNumber (Long Int)
 + checkName (String)
 + fixCommand (ScriptBlock)
@@ -19,10 +19,10 @@ The IssueFix object contains:
 + statusDateTime (DateTime) Date and time when status was updated.
 
 # Sequence Number
-Both the IssueCheck and the IssueFix have sequence numbers that are used for sorting checks and fixes.
+The IssueFix has sequence numbers that are used for sorting fixes.  Invoke-IssueFix DOES NOT sort input fix objects, author SHOULD Sort-Objects on Sequence Number prior to passing to Invoke-IssueFix.
 
 # Notification Count
-Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueCheck/IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value.
+Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value completely.
 
 # cmdlets
 ## Fixes
@@ -57,40 +57,46 @@ $PSDefaultParameterValues["Invoke-IssueFix:DefaultParameterValues"] = {$PSDefaul
 `
 
 ## Notification
-Support sending notification of fixes.  Starting off with email bit could add other channels.
+Support sending notification of fixes.  Starting off with email but could add other channels.
 ### Send-IssueMailMessage
 Sends and email for each applicable IssurFix.  Updating notifocationCount by default.  Choose which types of fixes to include in the notification.
 
 # Database
 The data will be stored in a folder with each object stored as a seperate JSON file.  This should reduce write conflicts and simplify data management tools.  The databasePath folder must exist.
 
-It will be important to Write any changed objects back to the database.  Thus any commands using the database should always end the pipeline with a Write cmdlet.
+It will be important to Write any changed objects back to the database.  Thus any commands using the database should always end the pipeline with a Write-IssueFix cmdlet.
 
 Each object when Read or after being writtened to the database will have a databasePath property added.  This property can be supplied by property value to future write cmdlets to easily re-save a changed object.
 ##Folders
 Each Write cmdlet will save to a different folder, creating the folders as needed.
-###Checks
 ###Fixes
 ###Fixes\Archive
-###Notification
 
 #Pipeline
-All cmdlets takes and return either a Check or a Fix objects.  They behave similar to the PaaTru concept.
+All cmdlets take and/or return Fix objects.  They behave similar to the PassThru concept.
 
 # Workflow
 ## On Demand
+Script(s) run performing "checks" and generating 0 or more fixes (via New-IssueFix).  These are typically written to a database (Write-IssueFix -NoClobber).
 
-User adds (New-IssueCheck) checks to the database in the form of ScriptBlocks.  A hashtable of parameters to be passed may also be saved.  Each issue check supports providing defaults foe the fix objects such as fixDescription, checkName, "Pending" or "Ready" status.
-
-User calls Invoke-IssueCheck to run through all (or filtered) IssueChecks, executing each check.  Checks return 0 or more fix objects.  If the command returns Strings or ScriptBlocks these will be converted to Fix objects using New-IssueFix using the defaults saved with the IssueCheck.  Depending on invoke parameters, any fixes returned in the "Ready" state will be executed in sequenceNumber order.  They will also be returned as results .  Fixes are executed after each check, before the next check to allow check processes to build on each other.
-
-Checks can be run multiple times but will only allow one fix to exist by comparing the iD which is a hash of fixCommand.  The Invoke-IssueCheck, by parameter, can run through the checks repeatedly until no new fixes are generated.  This allows checks to build upon each other and respond to fixes.  It also allows for single notification of issues.
-
+```
+If ($NeedsFixing) {
+     New-IssueFix -fixCommand {echo 'Fixed'} -fixDescription 'Fixed it's -checkName 'Sample Check' -status Pending | Write-IssueFix -DatabasePath 'c:\issuesdb' -NoClobber # The NoClobber parameter does not overwrite fixes with the same command, this allows a check to be ran over and over again and not effect the first instance with it's status, etc.
+}
+```
 After invoking, the user can review the results either by iterating the return or by querying the database with Read-IssueFix.
 
-Fixes in the "Pending" state can be changed to "Ready" through either the Set-IssueFix or the Complete-IssueFix cmdlets.  If instead a fix should be skipped or canceled, use either Set-IssueFix changing status to "Canceled".
+```
+Read-IssueFix -DatabasePath 'c:\issuesdb'
+```
 
-Re-running Invoke-IssueCheck will find any fixes in the ready state and execute those first.
+Fixes in the "Pending" state can be changed to "Ready" through either the Set-IssueFix or the Complete-IssueFix cmdlets.  If instead a fix should be skipped or canceled, use either Set-IssueFix changing status to "Canceled" or Deny-IssueFix.  They can also be moved to the Hold status which is like a special Pending.  Typically Hold status are not included in notifications.
+
+In order to execute the fixes, read the fixes and invoke them.  It is recommended that this be done at the beginning of the check script and again at the end.
+```
+Read-IssueFix -isReady -DatabasePath 'c:\issuesdb' | Invoke-IssueFix | Write-IssueFix -DatabasePath 'c:\issuesdb'
+# Note, invoke will only process those in Ready status so the isPending parameter is not required on the read cmdlet BUT it improves performance :-)
+```
 
 When finished a notification of all fixes, either still pending or finished, can be sent with the Send-IssueFixMail cmdlet. Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about. Parameters for the cmdlet can be saved in the database using Set-IssueFixMail cmdlet.
 
@@ -102,7 +108,7 @@ Better yet, comoleted fixes can be archived using Archive-IssueFix to maintain a
 Most issues processes will be scheduled.  In fact there coukd be different databases for different schedules.
 
 The scheduled job will:
-1) Invoke-IssueCheck using saved database
+1) Run scripted checks and output fix objects to database
 2) Send-IssueFixMail notifications
 3) Archive-IssueFix fixes that have completed or errored, perhaps based on the notificationCount.
 
