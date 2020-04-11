@@ -556,13 +556,13 @@ function Set-IssueFix {
                 #Make sure we got a fix passed
                 if ($Fix) {
                         if ($PSCmdlet.ShouldProcess("Change $($Fix.fixDescription)?")) {
-                                if ($CheckName) {
+                                if ($PSBoundParameters.ContainsKey('CheckName')) {
                                         $Fix.CheckName = $CheckName
                                 }
-                                if ($FixDescription) {
+                                if ($PSBoundParameters.ContainsKey('FixDescription')) {
                                         $Fix.fixDescription = $FixDescription
                                 }
-                                if ($Status) {
+                                if ($PSBoundParameters.ContainsKey('Status')) {
                                         if (($Status -ge 0) -and ($Status -le 5)) {
                                                 $Fix._status = $Status
                                                 $Fix.statusDateTime = Get-Date
@@ -570,13 +570,13 @@ function Set-IssueFix {
                                                 Write-Warning "Invalid status value"
                                         }
                                 }
-                                If ($NotificationCount) {
+                                If ($PSBoundParameters.ContainsKey('NotificationCount')) {
                                         $Fix.notificationCount = $NotificationCount
                                 }
-                                if ($SequenceNumber) {
+                                if ($PSBoundParameters.ContainsKey('SequenceNumber')) {
                                         $Fix.sequenceNumber = $SequenceNumber
                                 }
-                                if ($DecrementNotificationCount) {
+                                if ($PSBoundParameters.ContainsKey('DecrementNotificationCount')) {
                                         if ($Fix.notificationCount -gt 0) {
                                                 $Fix.notificationCount = $Fix.notificationCount - 1
                                         }
