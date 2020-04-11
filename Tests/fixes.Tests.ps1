@@ -237,17 +237,25 @@ describe "Invoke-IssueFix" {
     it "should invoke again as Force is set" {
         Start-Sleep -Seconds 5
         $fix = $fix | Invoke-IssueFix -Force
-        $fix.statusDateTime | should not be  $lastD
+        $fix.statusDateTime | should not be $lastD
     }
-
-    $lastD = $fix.statusDateTime
 
     it "should invoke again as Status is Scheduled and ScheduledDate is set to yesterday" {
-        Start-Sleep -Seconds 5
         $fix = $fix | Set-IssueFix -Status Scheduled -ScheduledAfter (Get-Date).AddDays(-1)
+        $lastD = $fix.statusDateTime
+        Start-Sleep -Seconds 5
         $fix = $fix | Invoke-IssueFix
-        $fix.statusDateTime | should not be  $lastD
+        $fix.statusDateTime | should not be $lastD
     }
+
+    it "should not invoke again even though status is Scheduled but ScheduledAfter is in the future" {
+        $fix = $fix | Set-IssueFix -Status Scheduled -ScheduledAfter (Get-Date).AddDays(1)
+        $lastD = $fix.statusDateTime
+        Start-Sleep -Seconds 5
+        $fix = $fix | Invoke-IssueFix
+        $fix.statusDateTime | should be $lastD
+    }
+
 
     $fix = New-IssueFix -FixCommand {Write-Output (5 / 0)} -FixDescription "First error" -CheckName "Greetings"
 
