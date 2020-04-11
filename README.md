@@ -10,9 +10,10 @@ The IssueFix object contains:
 + checkName (String)
 + fixCommand (ScriptBlock)
 + fixDescription (String)
-+ status (Int) Ready | Pending | Complete | Error | Canceled
++ status (Int) Ready | Pending | Complete | Error | Canceled | Hold | Scheduled
 + fixResults (String)
 + notificationCount (Int)
++ scheduledAfter (DateTime)
 + databasePath (string) Add/updated by Read/Write-IssueCheck if saved to a database folder.
 + path (string) Add/updated by Read/Write-IssueCheck if saved as a standalone file.
 + creationDateTime (DateTime) Date and time when the fix object is created.
@@ -113,6 +114,9 @@ The scheduled job will:
 3) Archive-IssueFix fixes that have completed or errored, perhaps based on the notificationCount.
 
 Users then recieve the the notification and can review both ezecuted fixes and "Pendong" fixes.  The user can use fix cmdlets to change the status of pending fixes which will then be processed at the next scheduled Invoke.
+
+### Scheduled Status
+Do not confuse the concept of scheduling invokes with the Scheduled status.  The Scheduled status behaves similar to Ready status except the Invoke-IssueFix cmdlet also checks the scheduledAfter fix attribute and verifies it is in the past before invoking.
 
 # Use Cases
 Detect system irregularities or failures.  Check coukd be to ping one or more systems.  If a system doesn't respond a fix could be generated in the "Pending" state to just provide notice or maybe the fix is a command to restart something.  Notification count could be set high so users keep getting the notice.
