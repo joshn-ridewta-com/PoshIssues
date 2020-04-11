@@ -5,11 +5,7 @@ enum IssueFixStatus {
     Error
     Canceled
     Hold
-}
-
-enum IssueCheckStatus {
-    Enabled
-    Disabled
+    Scheduled
 }
 
 <#
@@ -40,6 +36,8 @@ Set the number of times notices is sent about this fix.  Usefull for scheduled n
 .PARAMETER SequenceNumber
 Fix sort order.  Default is 1.
 
+.PARAMETER ScheduledAfter
+
 .PARAMETER useCommandAsDescription
 Switch to ignore the passed description, if any, and instead use the command as a string value for description.
 
@@ -69,6 +67,8 @@ function New-IssueFix {
                 [System.Int64] $NotificationCount = 10000,
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.Int64] $SequenceNumber = 1,
+                [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
+                [System.DateTime] $ScheduledAfter,
                 [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
                 [Switch] $useCommandAsDescription
 	)
@@ -76,12 +76,16 @@ function New-IssueFix {
                 $_return = New-Object -TypeName PSObject
                 $_return.PSObject.TypeNames.Insert(0,'PoshIssues.Fix')
 
-                If ($FixCommandString) {
+                If ($PSBoundParameters.ContainsKey('FixCommandString')) {
                         $FixCommand = [scriptblock]::Create($FixCommandString)
                 }
 
-                if ($useCommandAsDescription) {
+                if ($PSBoundParameters.ContainsKey('useCommandAsDescription')) {
                         $FixDescription = $FixCommand.ToString()
+                }
+
+                if (!($PSBoundParameters.ContainsKey('ScheduledAfter'))) {
+                        [System.DateTime] $ScheduledAfter = (Get-Date)
                 }
 
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixCommand" -Value $FixCommand
@@ -92,6 +96,7 @@ function New-IssueFix {
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $SequenceNumber)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] (Get-Date))
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] (Get-Date))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $ScheduledAfter)
 
                 #Calculate iD
                 $StringBuilder = New-Object System.Text.StringBuilder 
@@ -172,7 +177,8 @@ function Write-IssueFix {
                                 "statusInt" = $Fix._status;
                                 "notificationCount" = $Fix.notificationCount;
                                 "creationDateTime" = $Fix.creationDateTime;
-                                "statusDateTime" = $Fix.statusDateTime
+                                "statusDateTime" = $Fix.statusDateTime;
+                                "scheduledAfter" = $Fix.scheduledAfter
                         }
                         $_path = ""
                         If ($DatabasePath) {
@@ -420,7 +426,9 @@ function Read-IssueFix {
                 [Parameter(Mandatory=$false,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
                 [Switch] $isCanceled,
                 [Parameter(Mandatory=$false,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
-                [Switch] $isHold
+                [Switch] $isHold,
+                [Parameter(Mandatory=$false,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
+                [Switch] $isScheduled
         )
 	Process {
                 $items = @()
@@ -454,6 +462,7 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $_fix.scheduledAfter) -Force
 
                         if ("fixResults" -in $_fix.PSobject.Properties.Name) {
                                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixResults" -Value $_fix.fixResults -Force
@@ -469,7 +478,7 @@ function Read-IssueFix {
                                 )
                                 $this._status = ([IssueFixStatus]::$Status).value__
                         }
-                        if ($isPending -or $isComplete -or $isReady -or $isError -or $isCanceled -or $isHold) {
+                        if ($isPending -or $isComplete -or $isReady -or $isError -or $isCanceled -or $isHold -or $isScheduled) {
                                 # filtering results based on status
                                 if ($isPending -and ($_return.status -eq 'Pending')) {
                                         Write-Output $_return
@@ -487,6 +496,9 @@ function Read-IssueFix {
                                         Write-Output $_return
                                 }
                                 if ($isHold -and ($_return.status -eq 'Hold')) {
+                                        Write-Output $_return
+                                }
+                                if ($isScheduled -and ($_return.status -eq 'Scheduled')) {
                                         Write-Output $_return
                                 }
                         } else {
@@ -546,7 +558,9 @@ function Set-IssueFix {
                 [System.Int64] $NotificationCount,
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.Int64] $SequenceNumber,
-                [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
+                [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
+                [System.DateTime] $ScheduledAfter,
+                [Parameter(Mandatory=$false,Position=7,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
                 [Switch] $DecrementNotificationCount
 	)
 	Begin {
@@ -563,7 +577,7 @@ function Set-IssueFix {
                                         $Fix.fixDescription = $FixDescription
                                 }
                                 if ($PSBoundParameters.ContainsKey('Status')) {
-                                        if (($Status -ge 0) -and ($Status -le 5)) {
+                                        if (($Status -ge 0) -and ($Status -le 6)) {
                                                 $Fix._status = $Status
                                                 $Fix.statusDateTime = Get-Date
                                         } else {
@@ -575,6 +589,9 @@ function Set-IssueFix {
                                 }
                                 if ($PSBoundParameters.ContainsKey('SequenceNumber')) {
                                         $Fix.sequenceNumber = $SequenceNumber
+                                }
+                                if ($PSBoundParameters.ContainsKey('ScheduledAfter')) {
+                                        $Fix.scheduledAfter = $ScheduledAfter
                                 }
                                 if ($PSBoundParameters.ContainsKey('DecrementNotificationCount')) {
                                         if ($Fix.notificationCount -gt 0) {
@@ -669,27 +686,31 @@ function Deny-IssueFix {
 }
 
 <#
-TODO:  Need to finish documenting this cmdlet
 .SYNOPSIS
-Short description
+Takes each fix object passed and invoked the scriptblock adding the results to the object.
 
 .DESCRIPTION
-Long description
+For each issue fix object passed, if the object status is
+Ready, Scheduled AND ScheduledAfter is in the past, or Force is set
+invokes the scriptblock.  Add the results to the object and sets status
+to either Complete or Error.  The scriptblock is invoked in a child scope.
 
 .PARAMETER Fix
-The issue fix object to change, typically passed via pipeline.
+The issue fix object to invoke, typically passed via pipeline.
 
 .PARAMETER Force
-Parameter description
+Invokes all passed fix objects no matter of status.
 
-.PARAMETER NoNewScope
-Parameter description
+.PARAMETER DefaultParameterValues
+Due to the child scope, DefaultParameterValues are not inherited.  If needed,
+pass existing or new DefaultParameterValues into the child scope using this parameter.
 
 .EXAMPLE
-An example
+Read-IssueFix | Invoke-IssueFix
 
 .NOTES
-General notes
+The scriptblock in invoked using the InvokeWithContext method.  DefaultParameterValues, if
+provided is passed into the context.
 
 .INPUTS
 IssueFix 
@@ -707,14 +728,9 @@ function Invoke-IssueFix {
                 [Parameter()]
                 [Switch] $Force,
                 [Parameter()]
-                [Switch] $NoNewScope,
-                [Parameter()]
                 [System.Collections.Hashtable] $DefaultParameterValues
         )
         Begin {
-                if ($NoNewScope) {
-                        Write-Warning "Parameter switch NoNewScope is no longer supported, all invokes are in a child scope."
-                }
                 $variablesToPass = New-Object System.Collections.Generic.List[System.Management.Automation.PSVariable]
                 if ($DefaultParameterValues) {
                         $variablesToPass.Add((New-Variable -Name "PSDefaultParameterValues" -Value $DefaultParameterValues -PassThru))
@@ -723,7 +739,7 @@ function Invoke-IssueFix {
 	Process {
                 #Make sure we got a fix passed
                 if ($Fix) {
-                        if (($Fix.status -eq 0) -or $Force) {
+                        if (($Fix.status -eq 0) -or $Force -or (($Fix.status -eq 6) -and ($fix.scheduledAfter -le (Get-Date)))) {
                                 if ($PSCmdlet.ShouldProcess("Invoke $($Fix.fixDescription) from $($Fix.checkName) by running $($Fix.fixCommand)?")) {
                                         Add-Member -InputObject $Fix -MemberType NoteProperty -Name "fixResults" -Value "" -Force
                                         try {

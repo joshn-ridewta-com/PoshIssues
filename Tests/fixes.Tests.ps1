@@ -175,6 +175,10 @@ describe "Set-IssueFix" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
         ($fix | Set-IssueFix -Status Hold).status | should be Hold
     }
+    it "should change the Status of the IssueFix to Scheduled" {
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -Status Pending
+        ($fix | Set-IssueFix -Status Scheduled).status | should be Scheduled
+    }
 
     it "should change the NofiticationCount of the IssueFix" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
@@ -184,6 +188,12 @@ describe "Set-IssueFix" {
     it "should change the SequenceNumber of the IssueFix" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         ($fix | Set-IssueFix -SequenceNumber 66).sequenceNumber | should be 66
+    }
+
+    it "should change the ScheduledAfter of the IssueFix" {
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        $futureDate = ((Get-Date).AddDays(2))
+        ($fix | Set-IssueFix -ScheduledAfter $futureDate).scheduledAfter | should be $futureDate
     }
 
     it "should change the NofiticationCount of the IssueFix by 1" {
@@ -227,6 +237,15 @@ describe "Invoke-IssueFix" {
     it "should invoke again as Force is set" {
         Start-Sleep -Seconds 5
         $fix = $fix | Invoke-IssueFix -Force
+        $fix.statusDateTime | should not be  $lastD
+    }
+
+    $lastD = $fix.statusDateTime
+
+    it "should invoke again as Status is Scheduled and ScheduledDate is set to yesterday" {
+        Start-Sleep -Seconds 5
+        $fix = $fix | Set-IssueFix -Status Scheduled -ScheduledAfter (Get-Date).AddDays(-1)
+        $fix = $fix | Invoke-IssueFix
         $fix.statusDateTime | should not be  $lastD
     }
 
