@@ -18,6 +18,10 @@ describe "New-IssueFix" {
     it "should return a fix with an scriptblock" {
         $result2.fixCommand.InvokeReturnAsIs() | should be "Hello World"
     }
+
+    it "should return a fix with default Priority of Low" {
+        $result.Priority | should be Low
+    }
 }
 
 describe "Write-IssueFix" {
@@ -199,6 +203,16 @@ describe "Set-IssueFix" {
     it "should change the NofiticationCount of the IssueFix by 1" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" -NotificationCount 101
         ($fix | Set-IssueFix -DecrementNotificationCount).notificationCount | should be 100
+    }
+
+    it "should change the Priority of the IssueFix to Medium" {
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        ($fix | Set-IssueFix -Priority Medium).Priority | should be Medium
+    }
+
+    it "should change the Priority of the IssueFix to High" {
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+        ($fix | Set-IssueFix -Priority High).Priority | should be High
     }
 }
 
