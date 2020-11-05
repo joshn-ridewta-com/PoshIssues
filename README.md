@@ -14,6 +14,7 @@ The IssueFix object contains:
 + fixResults (String)
 + notificationCount (Int)
 + scheduledAfter (DateTime)
++ priority (Int) High | Medium | Low
 + databasePath (string) Add/updated by Read/Write-IssueCheck if saved to a database folder.
 + path (string) Add/updated by Read/Write-IssueCheck if saved as a standalone file.
 + creationDateTime (DateTime) Date and time when the fix object is created.

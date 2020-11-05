@@ -8,6 +8,12 @@ enum IssueFixStatus {
     Scheduled
 }
 
+enum IssueFixPriority {
+        Low
+        Medium
+        High
+}
+
 <#
 .SYNOPSIS
 Creates a new IssueFix object with the passed parameters
@@ -37,6 +43,10 @@ Set the number of times notices is sent about this fix.  Usefull for scheduled n
 Fix sort order.  Default is 1.
 
 .PARAMETER ScheduledAfter
+DateTime (defaults to current) in which the fix is able to be invoked when status is also Scheduled
+
+.PARAMETER Priority
+Priority High, Meduim or Low.  Defaults to Low.
 
 .PARAMETER useCommandAsDescription
 Switch to ignore the passed description, if any, and instead use the command as a string value for description.
@@ -69,6 +79,8 @@ function New-IssueFix {
                 [System.Int64] $SequenceNumber = 1,
                 [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.DateTime] $ScheduledAfter,
+                [Parameter(Mandatory=$false,Position=5,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
+                [IssueFixPriority] $Priority = 0,
                 [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
                 [Switch] $useCommandAsDescription
 	)
@@ -114,6 +126,17 @@ function New-IssueFix {
                         [IssueFixStatus] $status
                         )
                         $this._status = ([IssueFixStatus]::$Status).value__
+                }
+
+                Add-Member -InputObject $_return -MemberType ScriptProperty -Name "priority" -Value `
+                { #Get
+                        return [IssueFixPriority]::([enum]::getValues([IssueFixPriority]) | Where-Object value__ -eq $this._priority)
+                } `
+                { #Set
+                        param (
+                                [IssueFixPriority] $priority
+                        )
+                        $this._priority = ([IssueFixPriority]::$priority).value__
                 }
 
                 Write-Output $_return
@@ -178,7 +201,8 @@ function Write-IssueFix {
                                 "notificationCount" = $Fix.notificationCount;
                                 "creationDateTime" = $Fix.creationDateTime;
                                 "statusDateTime" = $Fix.statusDateTime;
-                                "scheduledAfter" = $Fix.scheduledAfter
+                                "scheduledAfter" = $Fix.scheduledAfter;
+                                "priorityInt" = $Fix._priority
                         }
                         $_path = ""
                         If ($DatabasePath) {
@@ -456,6 +480,7 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixDescription" -Value $_fix.fixDescription
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "checkName" -Value $_fix.checkName
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "_status" -Value ([Int64] $_fix.statusInt)
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_priority" -Value ([Int64] $_fix.priorityInt)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $_fix.notificationCount)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $_fix.sequenceNumber)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "iD" -Value $_fix.id
@@ -478,6 +503,18 @@ function Read-IssueFix {
                                 )
                                 $this._status = ([IssueFixStatus]::$Status).value__
                         }
+
+                        Add-Member -InputObject $_return -MemberType ScriptProperty -Name "priority" -Value `
+                        { #Get
+                                return [IssueFixPriority]::([enum]::getValues([IssueFixPriority]) | Where-Object value__ -eq $this._priority)
+                        } `
+                        { #Set
+                                param (
+                                [IssueFixPriority] $priority
+                                )
+                                $this._priority = ([IssueFixPriority]::$priority).value__
+                        }
+
                         if ($isPending -or $isComplete -or $isReady -or $isError -or $isCanceled -or $isHold -or $isScheduled) {
                                 # filtering results based on status
                                 if ($isPending -and ($_return.status -eq 'Pending')) {
@@ -534,6 +571,15 @@ Set the notification count of the fix to INT value.
 .PARAMETER SequenceNumber
 Set the sequence number of the fix to INT value.
 
+.PARAMETER ScheduledAfter
+Sets a dateTime when the fix should be invoked AFTER
+
+.PARAMETER Priority
+Changes the priority to either High, Medium or Low
+
+.PARAMETER DecrementNotificationCount
+Switch which changes the fix object by decrementing the notification count by 1.
+
 .EXAMPLE
 Set-IssueFix -Fix $aFixObject -Description "This is an issue fix with a new description."
 
@@ -560,7 +606,9 @@ function Set-IssueFix {
                 [System.Int64] $SequenceNumber,
                 [Parameter(Mandatory=$false,Position=6,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
                 [System.DateTime] $ScheduledAfter,
-                [Parameter(Mandatory=$false,Position=7,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
+                [Parameter(Mandatory=$false,Position=7,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$true)]
+                [IssueFixPriority] $Priority,
+                [Parameter(Mandatory=$false,Position=8,ValueFromPipeline=$false,ValueFromPipelineByPropertyName=$false)]
                 [Switch] $DecrementNotificationCount
 	)
 	Begin {
@@ -582,6 +630,13 @@ function Set-IssueFix {
                                                 $Fix.statusDateTime = Get-Date
                                         } else {
                                                 Write-Warning "Invalid status value"
+                                        }
+                                }
+                                if ($PSBoundParameters.ContainsKey('Priority')) {
+                                        if (($Priority -ge 0) -and ($Priority -le 2)) {
+                                                $Fix._priority = $Priority
+                                        } else {
+                                                Write-Warning "Invalid priority value"
                                         }
                                 }
                                 If ($PSBoundParameters.ContainsKey('NotificationCount')) {
