@@ -42,6 +42,13 @@ Describe "Write-IssueFix" {
         "$($DatabasePath)\Fixes\$($fix.id).json" | should -Exist
     }
 
+    it "should update the JSON file in the database folder using the DatabasePath from the fix" {
+        $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
+        #TODO: The DatabasePath is not comming from the fix object
+        $fix | Set-IssueFix -Status Error | Write-IssueFix #-DatabasePath $DatabasePath
+        "$($DatabasePath)\Fixes\$($fix.id).json" | should -Exist
+    }
+
     it "should create a JSON file at a specific location" {
         $fix | Write-IssueFix -Path $filePath | Out-Null
         $filePath | should -exist
@@ -65,7 +72,7 @@ Describe "Remove-IssueFix" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
 
-        Write-Host $fix.DatabasePath 
+        
         #TODO: the Remove-IssueFix should take DatabasePath from the fix but doesn't
         $fix | Remove-IssueFix -DatabasePath $DatabasePath
         "$($DatabasePath)\Fixes\$($fix.id).json" | should -not -exist
