@@ -109,6 +109,7 @@ function New-IssueFix {
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] (Get-Date))
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] (Get-Date))
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $ScheduledAfter)
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_priority" -Value ([Int64] $Priority)
 
                 #Calculate iD
                 $StringBuilder = New-Object System.Text.StringBuilder 
