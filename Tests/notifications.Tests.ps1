@@ -1,4 +1,6 @@
 BeforeAll {
+    . .\localTestValues.ps1
+    
     #Import module
     Import-Module ..\PoshIssues -Force
 }
