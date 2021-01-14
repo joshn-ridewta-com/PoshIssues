@@ -9,7 +9,7 @@
         <TableControl>
             <TableHeaders>
                 <TableColumnHeader>
-                    <Width>8</Width>
+                    <Width>10</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Width>22</Width>
@@ -19,7 +19,7 @@
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>Updated</Label>
-                    <Width>20</Width>
+                    <Width>22</Width>
                 </TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
