@@ -491,8 +491,12 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
-                        #TODO: Need to handle older files that are missing the scheduledAfter property
-                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $_fix.scheduledAfter) -Force
+                        #Need to handle older files that are missing the scheduledAfter property
+                        if ($null -eq $_fix.scheduledAfter) {
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] (Get-Date)) -Force        
+                        } else {
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $_fix.scheduledAfter) -Force
+                        }
 
                         if ("fixResults" -in $_fix.PSobject.Properties.Name) {
                                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixResults" -Value $_fix.fixResults -Force
