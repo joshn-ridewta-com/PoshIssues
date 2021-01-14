@@ -487,8 +487,12 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $_fix.notificationCount)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $_fix.sequenceNumber)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "iD" -Value $_fix.id
-                        #TODO: This assumes a databasePath and not a path.
-                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
+                        #Handle databasePath or path.
+                        if ($_fix.databasePath) {
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
+                        } else {
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "path" -Value $Path -Force
+                        }
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
                         #Need to handle older files that are missing the scheduledAfter property
