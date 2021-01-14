@@ -74,7 +74,7 @@ Describe "Remove-IssueFix" {
 
         
         #TODO: the Remove-IssueFix should take DatabasePath from the fix but doesn't
-        $fix | Remove-IssueFix -DatabasePath $DatabasePath
+        $fix | Remove-IssueFix #-DatabasePath $DatabasePath
         "$($DatabasePath)\Fixes\$($fix.id).json" | should -not -exist
     }
 
