@@ -477,6 +477,8 @@ function Read-IssueFix {
                         $_return = New-Object -TypeName PSObject
                         $_return.PSObject.TypeNames.Insert(0,'PoshIssues.Fix')
                         [ScriptBlock] $_script = [ScriptBlock]::Create([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($_fix.fixCommandBase64)))
+
+                        #Build out properties
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixCommand" -Value $_script
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "fixDescription" -Value $_fix.fixDescription
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "checkName" -Value $_fix.checkName
@@ -485,9 +487,11 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $_fix.notificationCount)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $_fix.sequenceNumber)
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "iD" -Value $_fix.id
+                        #TODO: This assumes a databasePath and not a path.
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "databasePath" -Value $DatabasePath -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "creationDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "statusDateTime" -Value ([DateTime] $_fix.creationDateTime) -Force
+                        #TODO: Need to handle older files that are missing the scheduledAfter property
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "scheduledAfter" -Value ([DateTime] $_fix.scheduledAfter) -Force
 
                         if ("fixResults" -in $_fix.PSobject.Properties.Name) {
