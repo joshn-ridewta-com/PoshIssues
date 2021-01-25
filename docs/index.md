@@ -10,21 +10,21 @@ The IssueFix object contains:
 + checkName (String)
 + fixCommand (ScriptBlock)
 + fixDescription (String)
-+ status (Int) Ready | Pending | Complete | Error | Canceled
++ status (Int) Ready &#124; Pending &#124; Complete &#124; Error &#124; Canceled
 + fixResults (String)
 + notificationCount (Int)
-+ databasePath (string) Add/updated by Read/Write-IssueCheck if saved to a database folder.
-+ path (string) Add/updated by Read/Write-IssueCheck if saved as a standalone file.
++ databasePath (string) Add/updated by Archive/Remote/Write-IssueFix if saved to a database folder.
++ path (string) Add/updated by Archive/Remove/Write-IssueFix if saved as a standalone file.
 + creationDateTime (DateTime) Date and time when the fix object is created.
 + statusDateTime (DateTime) Date and time when status was updated.
-+ priority (Int) Low | Medium | High
++ priority (Int) Low &#124; Medium &#124; High
 + scheduledAfter (DateTime) Date and time after which Invoke-IssueFix will invoke the fix
 
 # Sequence Number
 IssueFixs have sequence numbers that are used for sorting fixes.
 
 # Notification Count
-Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueCheck/IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value.
+Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value.
 
 # cmdlets
 + [New-IssueFix](New-IssueFix.md)
