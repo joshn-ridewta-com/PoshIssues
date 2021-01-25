@@ -1,5 +1,5 @@
 # PoshIssues
-TODO: Introduction goes here
+[TODO: Introduction goes here]
 
 # Fix
 A fix is a ScriptBlock to make the change recomended by the fix.  It supports a number of features to allow for reviewing and documenting the fixes.
@@ -21,7 +21,7 @@ The IssueFix object contains:
 + scheduledAfter (DateTime) Date and time after which Invoke-IssueFix will invoke the fix
 
 # Sequence Number
-IssueFixs have sequence numbers that are used for sorting fixes.
+IssueFixs have sequence numbers that are used for sorting fixes.  Fixes should be sorted before invoking with [TODO: largest or smallest?] number being invoked first.
 
 # Notification Count
 Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value.
@@ -56,7 +56,7 @@ All cmdlets takes and return Fix objects.
 
 # Workflow
 ## On Demand
-TODO: This needs ot be re-worked since I don't have IssueChecks.
+[TODO: This needs ot be re-worked since I don't have IssueChecks.]
 
 User adds (New-IssueCheck) checks to the database in the form of ScriptBlocks.  A hashtable of parameters to be passed may also be saved.  Each issue check supports providing defaults foe the fix objects such as fixDescription, checkName, "Pending" or "Ready" status.
 
