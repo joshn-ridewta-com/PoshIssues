@@ -1189,9 +1189,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+        <dev:code>PS C:\&gt; New-IssueFix -FixCommand {echo 'Hello World'} -Status Pending -Priority Low</dev:code>
         <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
+          <maml:para>This will create a simple fix that when executed it simply echos 'Hello World'.  It is created with a status of Pending so unless it is changed to ready (Approve-IssueFix) of invoked with Force, it will not invoke.  Priorty is set to Low.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
