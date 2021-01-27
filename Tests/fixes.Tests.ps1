@@ -1,12 +1,7 @@
 BeforeAll {
-    . .\localTestValues.ps1
-
     $DatabasePath = "TestDrive:\IssuesDB"
     $filePath = "TestDrive:\testFix.json"
     $archivePath = "TestDrive:\archiveFix.json"
-
-    #Import module
-    Import-Module ..\PoshIssues -Force
 }
 
 Describe "New-IssueFix" {
@@ -44,8 +39,7 @@ Describe "Write-IssueFix" {
 
     it "should update the JSON file in the database folder using the DatabasePath from the fix" {
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
-        #TODO: The DatabasePath is not comming from the fix object
-        $fix | Set-IssueFix -Status Error | Write-IssueFix #-DatabasePath $DatabasePath
+        $fix | Set-IssueFix -Status Error | Write-IssueFix -DatabasePath $DatabasePath
         "$($DatabasePath)\Fixes\$($fix.id).json" | should -Exist
     }
 
@@ -69,9 +63,7 @@ Describe "Write-IssueFix" {
 Describe "Remove-IssueFix" {
 
     it "should remove a JSON file in the database folder" {
-        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
-        $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
-
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
         
         #TODO: the Remove-IssueFix should take DatabasePath from the fix but doesn't
         $fix | Remove-IssueFix #-DatabasePath $DatabasePath
