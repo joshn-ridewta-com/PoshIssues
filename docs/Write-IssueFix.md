@@ -30,10 +30,10 @@ Supports saving to a specific Path or to a Database folder structure.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-IssueFix -FixCommand {echo 'Hello World'} -Description "Hi" | Write-IssueFix -DatabasePath C:\Issues
 ```
 
-{{ Add example description here }}
+Create a new issuefix and write it to a file/folder based database at C:\Issues
 
 ## PARAMETERS
 

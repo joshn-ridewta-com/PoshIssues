@@ -23,9 +23,10 @@ Typically used on those whose status is Pending.
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+PS C:\> Read-IssueFix -isPending | Approve-IssueFix | Write-IssueFix
 ```
-Read-IssueFix -isPending | Approve-IssueFix | Write-IssueFix
-```
+Retrieve the issuefixes from the database (assuming DatabasePath set by DefaultParameterValue), set status to Ready and save them back to the database.
 
 ## PARAMETERS
 

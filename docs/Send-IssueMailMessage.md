@@ -29,9 +29,10 @@ Returns issue fix objects with notification count potentially changed.
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+PS C:\> Read-IssueFix | Send-IssueMailMessage -From no-reply@contoso.com -To cares@contoso.com | Write-IssueFix
 ```
-Read-IssueFix | Send-IssueMailMessage -From no-reply@contoso.com -To cares@contoso.com | Write-IssueFix
-```
+Reads all issuefix objects (assuming DatabasePath set by DefaultParameterValue) and sends a summary of them as an email to cares@contosa.com and saves the results of the act of sending the email (decrementing the notification count) back to the database.
 
 ## PARAMETERS
 

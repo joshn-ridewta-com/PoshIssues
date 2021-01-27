@@ -23,9 +23,11 @@ Typically used on those whose status is Pending.
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+PS C:\> Read-IssueFix -isPending | Deny-IssueFix | Write-IssueFix
 ```
-Read-IssueFix -isPending | Deny-IssueFix | Write-IssueFix
-```
+
+Retrieves pending issues fixes (assuming DatabasePath set by DefaultParameterValue), changes the status to Canceled and then writes them back to the database (assuming DatabasePath set by DefaultParameterValue).
 
 ## PARAMETERS
 

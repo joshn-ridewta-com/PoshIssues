@@ -33,10 +33,10 @@ Just performas a move-item.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Read-IssueFix -isComplete | Archive-IssueFix
 ```
 
-{{ Add example description here }}
+Retrieves the issuefixes that have status Complete (assuming DatabasePath set by DefaultParameterValue) and passes those to the archive cmdlet which moves them to the archive folder in the database (assuming DatabasePath set by DefaultParameterValue).
 
 ## PARAMETERS
 

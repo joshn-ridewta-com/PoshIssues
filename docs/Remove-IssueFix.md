@@ -31,10 +31,10 @@ Just performs a remove-item.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Read-IssueFix -isError | Remove-IssueFix
 ```
 
-{{ Add example description here }}
+Reads all issuefix objects from the database (assuming DatabasePath set by DefaultParameterValue) that have status Error and removes (deletes) them from the database.
 
 ## PARAMETERS
 

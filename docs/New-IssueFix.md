@@ -38,7 +38,7 @@ Creates a new IssueFix object with the passed parameters, using defaults as need
 PS C:\> New-IssueFix -FixCommand {echo 'Hello World'} -Status Pending -Priority Low
 ```
 
-This will create a simple fix that when executed it simply echos 'Hello World'.  It is created with a status of Pending so unless it is changed to ready (Approve-IssueFix) of invoked with Force, it will not invoke.  Priorty is set to Low.
+This will create a simple fix that when executed it simply echos 'Hello World'.  It is created with a status of Pending so unless it is changed to ready (Approve-IssueFix) of invoked with Force, it will not invoke.  Priorty is set to Low.  The object is returned to the pipeline and NOT saved to the database automatically, use Write-IssueFix to save it beyond the pipeline.
 
 ## PARAMETERS
 

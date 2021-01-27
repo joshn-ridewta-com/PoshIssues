@@ -28,9 +28,10 @@ The scriptblock is invoked in a child scope.
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+PS C:\> Read-IssueFix | Invoke-IssueFix | Write-IssueFix
 ```
-Read-IssueFix | Invoke-IssueFix
-```
+Reads all issuefixes (assuming DatabasePath set by DefaultParameterValue) and passes to them to be invoked.  Only those with status Ready or Scheduled with a scheduledAfter date/time in the past are invoked.  Writes the resulting issuefi objects back to the database (assuming DatabasePath set by DefaultParameterValue).  Remember, if you don't write it back to the database the status and results are not saved even those the action was taken.
 
 ## PARAMETERS
 
@@ -50,7 +51,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-Invokes all passed fix objects no matter of status.
+Invokes all passed fix objects no matter of status.  Normally only those with status Ready OR Scheduled and have a ScheduledAfter value in the past are invoked.
 
 ```yaml
 Type: SwitchParameter
@@ -66,8 +67,7 @@ Accept wildcard characters: False
 
 ### -DefaultParameterValues
 Due to the child scope, DefaultParameterValues are not inherited. 
-If needed,
-pass existing or new DefaultParameterValues into the child scope using this parameter.
+If needed, pass existing or new DefaultParameterValues into the child scope using this parameter.
 
 ```yaml
 Type: Hashtable

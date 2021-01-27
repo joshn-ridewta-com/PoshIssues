@@ -117,9 +117,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Read-IssueFix -isPending | Approve-IssueFix | Write-IssueFix</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix -isPending | Approve-IssueFix | Write-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para></maml:para>
+          <maml:para>Retrieve the issuefixes from the database (assuming DatabasePath set by DefaultParameterValue), set status to Ready and save them back to the database.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -385,9 +385,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix -isComplete | Archive-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
+          <maml:para>Retrieves the issuefixes that have status Complete (assuming DatabasePath set by DefaultParameterValue) and passes those to the archive cmdlet which moves them to the archive folder in the database (assuming DatabasePath set by DefaultParameterValue).</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -510,9 +510,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Read-IssueFix -isPending | Deny-IssueFix | Write-IssueFix</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix -isPending | Deny-IssueFix | Write-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para></maml:para>
+          <maml:para>Retrieves pending issues fixes (assuming DatabasePath set by DefaultParameterValue), changes the status to Canceled and then writes them back to the database (assuming DatabasePath set by DefaultParameterValue).</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -548,7 +548,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>Invokes all passed fix objects no matter of status.</maml:para>
+            <maml:para>Invokes all passed fix objects no matter of status.  Normally only those with status Ready OR Scheduled and have a ScheduledAfter value in the past are invoked.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -608,7 +608,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>Invokes all passed fix objects no matter of status.</maml:para>
+          <maml:para>Invokes all passed fix objects no matter of status.  Normally only those with status Ready OR Scheduled and have a ScheduledAfter value in the past are invoked.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
@@ -682,9 +682,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Read-IssueFix | Invoke-IssueFix</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix | Invoke-IssueFix | Write-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para></maml:para>
+          <maml:para>Reads all issuefixes (assuming DatabasePath set by DefaultParameterValue) and passes to them to be invoked.  Only those with status Ready or Scheduled with a scheduledAfter date/time in the past are invoked.  Writes the resulting issuefi objects back to the database (assuming DatabasePath set by DefaultParameterValue).  Remember, if you don't write it back to the database the status and results are not saved even those the action was taken.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -758,15 +758,7 @@
         <maml:para></maml:para>
       </maml:alert>
     </maml:alertSet>
-    <command:examples>
-      <command:example>
-        <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
-        <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
-        </dev:remarks>
-      </command:example>
-    </command:examples>
+    <command:examples />
     <command:relatedLinks />
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -1191,7 +1183,7 @@
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
         <dev:code>PS C:\&gt; New-IssueFix -FixCommand {echo 'Hello World'} -Status Pending -Priority Low</dev:code>
         <dev:remarks>
-          <maml:para>This will create a simple fix that when executed it simply echos 'Hello World'.  It is created with a status of Pending so unless it is changed to ready (Approve-IssueFix) of invoked with Force, it will not invoke.  Priorty is set to Low.</maml:para>
+          <maml:para>This will create a simple fix that when executed it simply echos 'Hello World'.  It is created with a status of Pending so unless it is changed to ready (Approve-IssueFix) of invoked with Force, it will not invoke.  Priorty is set to Low.  The object is returned to the pipeline and NOT saved to the database automatically, use Write-IssueFix to save it beyond the pipeline.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -1638,9 +1630,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix -DatabasePath C:\Issues</dev:code>
         <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
+          <maml:para>Reads all issuefix objects from the file/folder based database found at C:\Issues.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -1848,9 +1840,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix -isError | Remove-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
+          <maml:para>Reads all issuefix objects from the database (assuming DatabasePath set by DefaultParameterValue) that have status Error and removes (deletes) them from the database.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2178,9 +2170,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Set-IssueFix -Fix $aFixObject -Description "This is an issue fix with a new description."</dev:code>
+        <dev:code>PS C:\&gt; Set-IssueFix -Fix $aFixObject -Description "This is an issue fix with a new description."</dev:code>
         <dev:remarks>
-          <maml:para></maml:para>
+          <maml:para>Changes the description of the $aFixObject and returns it to the pipeline.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2388,9 +2380,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+        <dev:code>PS C:\&gt; New-IssueFix -FixCommand {echo 'Hello World'} -Description "Hi" | Write-IssueFix -DatabasePath C:\Issues</dev:code>
         <dev:remarks>
-          <maml:para>{{ Add example description here }}</maml:para>
+          <maml:para>Create a new issuefix and write it to a file/folder based database at C:\Issues</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

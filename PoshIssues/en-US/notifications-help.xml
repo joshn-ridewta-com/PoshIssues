@@ -488,9 +488,9 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Read-IssueFix | Send-IssueMailMessage -From no-reply@contoso.com -To cares@contoso.com | Write-IssueFix</dev:code>
+        <dev:code>PS C:\&gt; Read-IssueFix | Send-IssueMailMessage -From no-reply@contoso.com -To cares@contoso.com | Write-IssueFix</dev:code>
         <dev:remarks>
-          <maml:para></maml:para>
+          <maml:para>Reads all issuefix objects (assuming DatabasePath set by DefaultParameterValue) and sends a summary of them as an email to cares@contosa.com and saves the results of the act of sending the email (decrementing the notification count) back to the database.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

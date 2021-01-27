@@ -32,10 +32,10 @@ File must have previousely been written to file system.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Read-IssueFix -DatabasePath C:\Issues
 ```
 
-{{ Add example description here }}
+Reads all issuefix objects from the file/folder based database found at C:\Issues.
 
 ## PARAMETERS
 

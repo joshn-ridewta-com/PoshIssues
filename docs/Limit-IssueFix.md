@@ -21,14 +21,6 @@ Removes duplicate issue fix objects from pipeline.
 Duplicates are matched by iD. 
 Only the oldest fix object of each matching by iD is passed on.
 
-## EXAMPLES
-
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
-```
-
-{{ Add example description here }}
 
 ## PARAMETERS
 

@@ -25,9 +25,11 @@ Allows for changing certain properties of an issue fix object.
 ## EXAMPLES
 
 ### EXAMPLE 1
+```powershell
+PS C:\> Set-IssueFix -Fix $aFixObject -Description "This is an issue fix with a new description."
 ```
-Set-IssueFix -Fix $aFixObject -Description "This is an issue fix with a new description."
-```
+
+Changes the description of the $aFixObject and returns it to the pipeline.
 
 ## PARAMETERS
 
