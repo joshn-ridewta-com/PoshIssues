@@ -1,5 +1,5 @@
 # PoshIssues
-[TODO: Introduction goes here]
+PoshIssues is an attempt to imorove PowerShell automation while providing for human decision points and change history.  It is based on wrapping scriptblocks.
 
 # Fix
 A fix is a ScriptBlock to make the change recomended by the fix.  It supports a number of features to allow for reviewing and documenting the fixes.
@@ -20,11 +20,6 @@ The IssueFix object contains:
 + creationDateTime (DateTime) Date and time when the fix object is created.
 + statusDateTime (DateTime) Date and time when status was updated.
 
-# Sequence Number
-The IssueFix has sequence numbers that are used for sorting fixes.  Invoke-IssueFix DOES NOT sort input fix objects, author SHOULD Sort-Objects on Sequence Number prior to passing to Invoke-IssueFix.
-
-# Notification Count
-Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value completely.
 
 # cmdlets
 + [New-IssueFix](New-IssueFix.md)
@@ -70,10 +65,21 @@ This includes the incrediably useful $PSDefaultParameterValue variable.  To comp
 $PSDefaultParameterValues["Invoke-IssueFix:DefaultParameterValues"] = {$PSDefaultParameterValues}
 `
 
+### Sequence Number
+
+The IssueFix has sequence numbers that are used for sorting fixes.  Invoke-IssueFix DOES NOT sort input fix objects, author SHOULD Sort-Objects on Sequence Number prior to passing to Invoke-IssueFix.
+
 ## Notification
 Support sending notification of fixes.  Starting off with email but could add other channels.
 ### Send-IssueMailMessage
 Sends and email for each applicable IssurFix.  Updating notifocationCount by default.  Choose which types of fixes to include in the notification.
+
+
+### Notification Count
+
+Each time a notificaton is sent for a fix the notificationCount is decremented by one. By default, only fixes with a notification count greater then 0 are sent. This allows for control over how often a fix is notified about.  If the IssueFix creator does not want any notifications sent (by default), set to 0.  If only want to be notified once, set to 1.  The notification cmdlets provide control over when this value is used.  For example, parameters allow only using the notification count for "Pending" fixes and instead setting "Completed/Error" fixes to 0 after first notification.  Or the notification cmdlet can send for all fixes and ignore this value completely.
+
+
 
 # Database
 The data will be stored in a folder with each object stored as a seperate JSON file.  This should reduce write conflicts and simplify data management tools.  The databasePath folder must exist.
