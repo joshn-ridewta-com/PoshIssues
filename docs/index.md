@@ -65,13 +65,15 @@ This includes the incrediably useful $PSDefaultParameterValue variable.  To comp
 $PSDefaultParameterValues["Invoke-IssueFix:DefaultParameterValues"] = {$PSDefaultParameterValues}
 `
 
+### Sequence Number
+
+The IssueFix has sequence numbers that are used for sorting fixes.  Invoke-IssueFix DOES NOT sort input fix objects, author SHOULD Sort-Objects on Sequence Number prior to passing to Invoke-IssueFix.
+
 ## Notification
 Support sending notification of fixes.  Starting off with email but could add other channels.
 ### Send-IssueMailMessage
 Sends and email for each applicable IssurFix.  Updating notifocationCount by default.  Choose which types of fixes to include in the notification.
-# Sequence Number
 
-The IssueFix has sequence numbers that are used for sorting fixes.  Invoke-IssueFix DOES NOT sort input fix objects, author SHOULD Sort-Objects on Sequence Number prior to passing to Invoke-IssueFix.
 
 ### Notification Count
 
