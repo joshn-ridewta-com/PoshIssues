@@ -311,3 +311,14 @@ Describe "Limit-IssueFix" {
         ($results | Measure-Object).Count | should -Be 2
     }
 }
+
+Describe "DateTimeUTC" {
+    BeforeAll {
+        $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
+    }
+
+    
+    it "should store date/time in one time zone and return satme time in another {
+        #TODO: set scheduleAfter using time from timezone and compare with UTC
+    }
+}
