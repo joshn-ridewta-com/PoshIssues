@@ -1,12 +1,12 @@
 param (
     [String] $Path = ".\PoshIssues", #Path to the module folder
-    [String] $TestsPath = ".\Tests", #Path to the Pester tests files
+    [String] $TestsPath = ".\Tests\", #Path to the Pester tests files
     [String] $DocsPath = ".\docs", #Path to the platyPS docs
     [String] $PublishRepo = "PSGallery"
 )
 
 Import-Module -Name $Path -Force
-. .\localTestValues.ps1
+. .\Tests\localTestValues.ps1
 
 # Run tests
 Invoke-Pester -Script "$TestsPath*"

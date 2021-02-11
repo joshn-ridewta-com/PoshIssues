@@ -65,8 +65,7 @@ Describe "Remove-IssueFix" {
     it "should remove a JSON file in the database folder" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings" | Write-IssueFix -DatabasePath $DatabasePath
         
-        #TODO: the Remove-IssueFix should take DatabasePath from the fix but doesn't
-        $fix | Remove-IssueFix #-DatabasePath $DatabasePath
+        $fix | Remove-IssueFix
         "$($DatabasePath)\Fixes\$($fix.id).json" | should -not -exist
     }
 
@@ -83,8 +82,7 @@ Describe "Archive-IssueFix" {
     it "should move the fix to the database archive folder" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
         $fix = $fix | Write-IssueFix -DatabasePath $DatabasePath
-        #TODO: Archive-IssueFix is not getting DatabasePath from pipeline
-        $fix | Archive-IssueFix -DatabasePath $DatabasePath
+        $fix | Archive-IssueFix
         (Get-ChildItem "$($DatabasePath)\Fixes\Archive" | Measure-Object).Count | should -Be 1        
     }
 
@@ -317,8 +315,15 @@ Describe "DateTimeUTC" {
         $fix = New-IssueFix -FixCommand {Write-Output "Hello World"} -FixDescription "First fix" -CheckName "Greetings"
     }
 
-    
-    it "should store date/time in one time zone and return satme time in another {
-        #TODO: set scheduleAfter using time from timezone and compare with UTC
+    it "should store creationDateTime in one UTC time zone and return same time in local time zone" {
+        ($fix.creationDateTime.ToUniversalTime() -eq $fix._creationDateTime) | should -Be $true
+    }
+
+    it "should store statusDateTime in one UTC time zone and return same time in local time zone" {
+        ($fix.statusDateTime.ToUniversalTime() -eq $fix._statusDateTime) | should -Be $true
+    }
+
+    it "should store scheduledAfter in one UTC time zone and return same time in local time zone" {
+        ($fix.scheduledAfter.ToUniversalTime() -eq $fix._scheduledAfter) | should -Be $true
     }
 }

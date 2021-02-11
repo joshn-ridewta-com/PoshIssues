@@ -106,9 +106,9 @@ function New-IssueFix {
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_status" -Value ([Int64] $Status)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $NotificationCount)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $SequenceNumber)
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTime" -Value [System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date))
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value [System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date))
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value [System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] $ScheduledAfter)
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTime" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] $ScheduledAfter))
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_priority" -Value ([Int64] $Priority)
 
                 #Date methods for local time zone
