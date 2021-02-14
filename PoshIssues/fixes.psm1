@@ -226,9 +226,9 @@ function Write-IssueFix {
                                 "fixResults" = $Fix.fixResults;
                                 "statusInt" = $Fix._status;
                                 "notificationCount" = $Fix.notificationCount;
-                                "creationDateTimeUTC" = $Fix._creationDateTime;
-                                "statusDateTimeUTC" = $Fix._statusDateTime;
-                                "scheduledAfterUTC" = $Fix._scheduledAfter;
+                                "creationDateTimeUTC" = $Fix._creationDateTimeUTC;
+                                "statusDateTimeUTC" = $Fix._statusDateTimeUTC;
+                                "scheduledAfterUTC" = $Fix._scheduledAfterUTC;
                                 "priorityInt" = $Fix._priority
                         }
                         $_path = ""
@@ -516,7 +516,7 @@ function Read-IssueFix {
 
                         #Date methods for local time zone
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTime" -Value ([DateTime] $_fix.creationDateTimeUTC) -Force
-                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value ([DateTime] $_fix.creationDateTimeUTC) -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value ([DateTime] $_fix.statusDateTimeUTC) -Force
                         #Need to handle older files that are missing the scheduledAfter property
                         if ($null -eq $_fix.scheduledAfter) {
                                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value ([DateTime] (Get-Date)) -Force        
