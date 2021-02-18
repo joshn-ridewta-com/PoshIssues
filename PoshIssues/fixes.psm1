@@ -106,35 +106,35 @@ function New-IssueFix {
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_status" -Value ([Int64] $Status)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "notificationCount" -Value ([Int64] $NotificationCount)
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "sequenceNumber" -Value ([Int64] $SequenceNumber)
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTime" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
-                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] $ScheduledAfter))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTimeUTC" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTimeUTC" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] (Get-Date)))
+                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfterUTC" -Value ([System.TimeZoneInfo]::ConvertTimeToUtc([DateTime] $ScheduledAfter))
                 Add-Member -InputObject $_return -MemberType NoteProperty -Name "_priority" -Value ([Int64] $Priority)
 
                 #Date methods for local time zone
                 Add-Member -InputObject $_return -MemberType ScriptProperty -Name creationDateTime `
                 {  #Get as local time zone
-                        return $this._creationDateTime.ToLocalTime()
+                        return $this._creationDateTimeUTC.ToLocalTime()
                 } `
                 {  #Set to UTC
                         param([DateTime] $date)
-                        $this._creationDateTime = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                        $this._creationDateTimeUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                 }
                 Add-Member -InputObject $_return -MemberType ScriptProperty -Name statusDateTime `
                 {  #Get as local time zone
-                        return $this._statusDateTime.ToLocalTime()
+                        return $this._statusDateTimeUTC.ToLocalTime()
                 } `
                 {  #Set to UTC
                         param([DateTime] $date)
-                        $this._statusDateTime = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                        $this._statusDateTimeUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                 }
                 Add-Member -InputObject $_return -MemberType ScriptProperty -Name scheduledAfter `
                 {  #Get as local time zone
-                        return $this._scheduledAfter.ToLocalTime()
+                        return $this._scheduledAfterUTC.ToLocalTime()
                 } `
                 {  #Set to UTC
                         param([DateTime] $date)
-                        $this._scheduledAfter = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                        $this._scheduledAfterUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                 }
 
                 #Calculate iD
@@ -515,38 +515,38 @@ function Read-IssueFix {
                         Add-Member -InputObject $_return -MemberType NoteProperty -Name "iD" -Value $_fix.id
 
                         #Date methods for local time zone
-                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTime" -Value ([DateTime] $_fix.creationDateTimeUTC) -Force
-                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTime" -Value ([DateTime] $_fix.statusDateTimeUTC) -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_creationDateTimeUTC" -Value ([DateTime] $_fix.creationDateTimeUTC) -Force
+                        Add-Member -InputObject $_return -MemberType NoteProperty -Name "_statusDateTimeUTC" -Value ([DateTime] $_fix.statusDateTimeUTC) -Force
                         #Need to handle older files that are missing the scheduledAfter property
-                        if ($null -eq $_fix.scheduledAfter) {
-                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value ([DateTime] (Get-Date)) -Force        
+                        if ($null -eq $_fix.scheduledAfterUTC) {
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfterUTC" -Value ([DateTime] (Get-Date)) -Force        
                         } else {
-                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfter" -Value ([DateTime] $_fix.scheduledAfterUTC) -Force
+                                Add-Member -InputObject $_return -MemberType NoteProperty -Name "_scheduledAfterUTC" -Value ([DateTime] $_fix.scheduledAfterUTC) -Force
                         }
 
                         Add-Member -InputObject $_return -MemberType ScriptProperty -Name creationDateTime `
                         {  #Get as local time zone
-                                return $this._creationDateTime.ToLocalTime()
+                                return $this._creationDateTimeUTC.ToLocalTime()
                         } `
                         {  #Set to UTC
                                 param([DateTime] $date)
-                                $this._creationDateTime = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                                $this._creationDateTimeUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                         }
                         Add-Member -InputObject $_return -MemberType ScriptProperty -Name statusDateTime `
                         {  #Get as local time zone
-                                return $this._statusDateTime.ToLocalTime()
+                                return $this._statusDateTimeUTC.ToLocalTime()
                         } `
                         {  #Set to UTC
                                 param([DateTime] $date)
-                                $this._statusDateTime = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                                $this._statusDateTimeUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                         }
                         Add-Member -InputObject $_return -MemberType ScriptProperty -Name scheduledAfter `
                         {  #Get as local time zone
-                                return $this._scheduledAfter.ToLocalTime()
+                                return $this._scheduledAfterUTC.ToLocalTime()
                         } `
                         {  #Set to UTC
                                 param([DateTime] $date)
-                                $this._scheduledAfter = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
+                                $this._scheduledAfterUTC = [System.TimeZoneInfo]::ConvertTimeToUtc($date)
                         }
 
                         #Handle databasePath or path.

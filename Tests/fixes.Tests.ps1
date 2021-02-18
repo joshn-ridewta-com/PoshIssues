@@ -316,14 +316,14 @@ Describe "DateTimeUTC" {
     }
 
     it "should store creationDateTime in one UTC time zone and return same time in local time zone" {
-        ($fix.creationDateTime.ToUniversalTime() -eq $fix._creationDateTime) | should -Be $true
+        ($fix.creationDateTime.ToUniversalTime() -eq $fix._creationDateTimeUTC) | should -Be $true
     }
 
     it "should store statusDateTime in one UTC time zone and return same time in local time zone" {
-        ($fix.statusDateTime.ToUniversalTime() -eq $fix._statusDateTime) | should -Be $true
+        ($fix.statusDateTime.ToUniversalTime() -eq $fix._statusDateTimeUTC) | should -Be $true
     }
 
     it "should store scheduledAfter in one UTC time zone and return same time in local time zone" {
-        ($fix.scheduledAfter.ToUniversalTime() -eq $fix._scheduledAfter) | should -Be $true
+        ($fix.scheduledAfter.ToUniversalTime() -eq $fix._scheduledAfterUTC) | should -Be $true
     }
 }
